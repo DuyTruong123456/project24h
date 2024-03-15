@@ -1,118 +1,181 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+// App.js
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+// Import necessary modules and components
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, Modal, Button } from "react-native";
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// Import TaskList component
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+// Import TaskModal component
+import styles from "./src/constant/styles";
+import TaskList from "./src/components/TaskList";
+import TaskModal from "./src/components/TaskModal";
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+// Define the main App component
+const App = () => {
+  // Define state variables
 
-function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  // Array to store tasks
+  const [tasks, setTasks] = useState([]);
+  const [task, setTask] = useState({
+    title: "",
+    description: "",
+    status: "Pending",
+    deadline: "",
+    createdAt: "",
+  });
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  // Task object for creating/editing tasks
+
+  // Modal visibility
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Task being edited
+  const [editingTask, setEditingTask] = useState(null);
+  const [validationError, setValidationError] = useState(false); // Validation flag
+
+  // Function to add a new task or update an existing task
+  const handleAddTask = () => {
+    if (task.title.trim() !== "" && task.deadline !== "") {
+      const currentDate = new Date();
+      const formattedDate = currentDate.toLocaleString();
+
+      if (editingTask) {
+        // If editing an existing task, update it
+        const updatedTasks = tasks.map((t) =>
+          t.id === editingTask.id ? { ...t, ...task } : t
+        );
+        setTasks(updatedTasks);
+        setEditingTask(null);
+      } else {
+        // If adding a new task, create it
+        const newTask = {
+          id: Date.now(),
+          ...task,
+
+          // Set the creation date and time as a string
+          createdAt: formattedDate,
+        };
+        setTasks([...tasks, newTask]);
+      }
+
+      // Clear the task input fields and reset state
+      setTask({
+        title: "",
+        description: "",
+        status: "Incomplete",
+        deadline: "",
+        createdAt: "",
+      });
+
+      // Close the modal
+      setModalVisible(false);
+
+      // Reset validation error
+      setValidationError(false);
+    } else {
+      // Show validation error if fields are not filled
+      setValidationError(true);
+    }
   };
 
+  // Function to handle task editing
+  const handleEditTask = (task) => {
+    // Set the task being edited
+    setEditingTask(task);
+
+    // Pre-fill the input with task data
+    setTask(task);
+
+    // Open the modal for editing
+    setModalVisible(true);
+  };
+  // Function to delete all done task
+  const handleDeleteAllDoneTask = () => {
+    const updatedTasks = tasks.filter((t) => t.status !== "Completed");
+    setTasks(updatedTasks);
+  };
+  // Function to delete a task
+  const handleDeleteTask = (taskId) => {
+    const updatedTasks = tasks.filter((t) => t.id !== taskId);
+    setTasks(updatedTasks);
+  };
+
+  // Function to toggle task completion status
+  const handleToggleCompletion = (taskId, status) => {
+    const updatedTasks = tasks.map((t) =>
+      t.id === taskId
+        ? {
+            ...t,
+            status: status,
+          }
+        : t
+    );
+    setTasks(updatedTasks);
+  };
+
+  // Return the JSX for rendering the component
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <View style={styles.container}>
+      <Text style={styles.title}>Task Manager</Text>
+      {/* Render the TaskList component */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          handleDeleteAllDoneTask();
+        }}
+      >
+        <Text style={styles.addButtonText}>{"Delete All Done"}</Text>
+      </TouchableOpacity>
+      <TaskList
+        tasks={tasks}
+        handleEditTask={handleEditTask}
+        handleToggleCompletion={handleToggleCompletion}
+        handleDeleteTask={handleDeleteTask}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      {/* Button to add or edit tasks */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          setEditingTask(null);
+          setTask({
+            title: "",
+            description: "",
+            status: "In-progress",
+            deadline: "",
+            createdAt: "",
+          });
+          setModalVisible(true);
+          setValidationError(false);
+        }}
+      >
+        <Text style={styles.addButtonText}>
+          {editingTask ? "Edit Task" : "Add Task"}
+        </Text>
+      </TouchableOpacity>
+      {/* Render the TaskModal component */}
+      <TaskModal
+        modalVisible={modalVisible}
+        task={task}
+        setTask={setTask}
+        handleAddTask={handleAddTask}
+        handleCancel={() => {
+          setEditingTask(null);
+          setTask({
+            title: "",
+            description: "",
+            status: "Pending",
+            deadline: "",
+            createdAt: "",
+          });
+          setModalVisible(false);
+          setValidationError(false);
+        }}
+        validationError={validationError}
+      />
+    </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
+// Export the App component as the default export
 export default App;
