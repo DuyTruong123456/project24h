@@ -1,7 +1,7 @@
 // App.js
 
 // Import necessary modules and components
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Modal, Button } from "react-native";
 
 // Import TaskList component
@@ -17,6 +17,7 @@ import TaskList from "./src/components/TaskList";
 import TaskModal from "./src/components/TaskModal";
 import { TabBar, TabView } from "react-native-tab-view";
 import { taskTypes } from "./src/constant/types";
+import storage from "./src/components/storage";
 
 // Define the main App component
 const App = () => {
@@ -35,6 +36,52 @@ const App = () => {
   const [validationError, setValidationError] = useState(false); // Validation flag
 
   // Function to add a new task or update an existing task
+  const handleSetTask = async (taskList: any) => {
+    console.log("add");
+    await storage.save({
+      key: "task", // Note: Do not use underscore("_") in key!
+      data: taskList,
+      expires: null,
+    });
+    handleGetTask();
+  };
+  const handleGetTask = () => {
+    storage
+      .load({
+        key: "task",
+
+        autoSync: true,
+
+        syncInBackground: true,
+
+        syncParams: {
+          extraFetchOptions: {},
+          someFlag: true,
+        },
+      })
+      .then((ret) => {
+        // found data go to then()
+        console.log("ret", JSON.stringify(ret, null, 2));
+        setTasks(ret);
+      })
+      .catch((err) => {
+        // any exception including data not found
+        // goes to catch()
+        console.warn(err.message);
+        switch (err.name) {
+          case "NotFoundError":
+            // TODO;
+            break;
+          case "ExpiredError":
+            // TODO
+            break;
+        }
+      });
+  };
+  useEffect(() => {
+    handleGetTask();
+  }, []);
+
   const handleAddTask = () => {
     if (task.title.trim() !== "" && task.deadline !== "") {
       const currentDate = new Date();
@@ -45,7 +92,10 @@ const App = () => {
         const updatedTasks = tasks.map((t) =>
           t.id === editingTask.id ? { ...t, ...task } : t
         );
-        setTasks(updatedTasks);
+        setTasks((task) => {
+          handleSetTask(updatedTasks);
+          return updatedTasks;
+        });
         setEditingTask(null);
       } else {
         // If adding a new task, create it
@@ -56,12 +106,14 @@ const App = () => {
           // Set the creation date and time as a string
           createdAt: formattedDate,
         };
-        setTasks([...tasks, newTask]);
+        setTasks((task) => {
+          handleSetTask([...tasks, newTask]);
+          return [...tasks, newTask];
+        });
       }
 
       // Clear the task input fields and reset state
       setTask(taskTypes[0]);
-
       // Close the modal
       setModalVisible(false);
 
@@ -80,19 +132,24 @@ const App = () => {
 
     // Pre-fill the input with task data
     setTask(task);
-
     // Open the modal for editing
     setModalVisible(true);
   };
   // Function to delete all done task
   const handleDeleteAllDoneTask = () => {
     const updatedTasks = tasks.filter((t) => t.status !== "Completed");
-    setTasks(updatedTasks);
+    setTasks(() => {
+      handleSetTask(updatedTasks);
+      return updatedTasks;
+    });
   };
   // Function to delete a task
   const handleDeleteTask = (taskId) => {
     const updatedTasks = tasks.filter((t) => t.id !== taskId);
-    setTasks(updatedTasks);
+    setTasks(() => {
+      handleSetTask(updatedTasks);
+      return updatedTasks;
+    });
   };
 
   // Function to toggle task completion status
