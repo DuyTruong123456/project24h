@@ -7,29 +7,29 @@ import { View, Text, TouchableOpacity, Modal, Button } from "react-native";
 // Import TaskList component
 
 // Import TaskModal component
-import styles from "./src/constant/styles";
+import styles, {
+  FS,
+  HEIGHT_SCALE_RATIO,
+  WIDTH,
+  WIDTH_SCALE_RATIO,
+} from "./src/constant/styles";
 import TaskList from "./src/components/TaskList";
 import TaskModal from "./src/components/TaskModal";
+import { TabBar, TabView } from "react-native-tab-view";
+import { taskTypes } from "./src/constant/types";
 
 // Define the main App component
 const App = () => {
   // Define state variables
-
   // Array to store tasks
   const [tasks, setTasks] = useState([]);
-  const [task, setTask] = useState({
-    title: "",
-    description: "",
-    status: "Pending",
-    deadline: "",
-    createdAt: "",
-  });
+  const [task, setTask] = useState(taskTypes[0]);
 
   // Task object for creating/editing tasks
 
   // Modal visibility
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [selectedIndex, setSelectedIndex] = useState(0);
   // Task being edited
   const [editingTask, setEditingTask] = useState(null);
   const [validationError, setValidationError] = useState(false); // Validation flag
@@ -60,13 +60,7 @@ const App = () => {
       }
 
       // Clear the task input fields and reset state
-      setTask({
-        title: "",
-        description: "",
-        status: "Incomplete",
-        deadline: "",
-        createdAt: "",
-      });
+      setTask(taskTypes[0]);
 
       // Close the modal
       setModalVisible(false);
@@ -103,77 +97,173 @@ const App = () => {
 
   // Function to toggle task completion status
   const handleToggleCompletion = (taskId, status) => {
+    let newIndex = taskTypes.findIndex((task) => task.status === status);
+    if (newIndex === taskTypes.length || newIndex === -1) {
+      newIndex = 0;
+    }
     const updatedTasks = tasks.map((t) =>
       t.id === taskId
         ? {
             ...t,
             status: status,
+            statusBg: taskTypes[newIndex].statusBg,
+            statusBd: taskTypes[newIndex].statusBd,
+            btnLabel: taskTypes[newIndex].btnLabel,
+            key: taskTypes[newIndex].key,
           }
         : t
     );
     setTasks(updatedTasks);
   };
-
-  // Return the JSX for rendering the component
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Task Manager</Text>
-      {/* Render the TaskList component */}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          handleDeleteAllDoneTask();
-        }}
-      >
-        <Text style={styles.addButtonText}>{"Delete All Done"}</Text>
-      </TouchableOpacity>
+  const testdata = [
+    {
+      id: 0,
+      status: "Incomplete",
+      key: "incomplete",
+    },
+    {
+      id: 1,
+      status: "In-progress",
+      key: "inprogress",
+    },
+    {
+      id: 2,
+      status: "Completed",
+      key: "completed",
+    },
+  ];
+  const renderTaskList = (taskToRender: any) => {
+    return (
       <TaskList
-        tasks={tasks}
+        tasks={taskToRender}
         handleEditTask={handleEditTask}
         handleToggleCompletion={handleToggleCompletion}
         handleDeleteTask={handleDeleteTask}
       />
-      {/* Button to add or edit tasks */}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          setEditingTask(null);
-          setTask({
-            title: "",
-            description: "",
-            status: "In-progress",
-            deadline: "",
-            createdAt: "",
-          });
-          setModalVisible(true);
-          setValidationError(false);
-        }}
-      >
-        <Text style={styles.addButtonText}>
-          {editingTask ? "Edit Task" : "Add Task"}
-        </Text>
-      </TouchableOpacity>
-      {/* Render the TaskModal component */}
-      <TaskModal
-        modalVisible={modalVisible}
-        task={task}
-        setTask={setTask}
-        handleAddTask={handleAddTask}
-        handleCancel={() => {
-          setEditingTask(null);
-          setTask({
-            title: "",
-            description: "",
-            status: "Pending",
-            deadline: "",
-            createdAt: "",
-          });
-          setModalVisible(false);
-          setValidationError(false);
-        }}
-        validationError={validationError}
-      />
-    </View>
+    );
+  };
+  return (
+    <>
+      <Text style={[styles.title, { backgroundColor: "#4FC8ED" }]}>
+        Task Manager
+      </Text>
+      <View style={styles.container}>
+        <TabView
+          swipeEnabled={false}
+          keyboardDismissMode="on-drag"
+          navigationState={{ index: selectedIndex, routes: testdata }}
+          renderScene={({ route }) => {
+            let taskToRender = tasks.filter((task) => {
+              return task.status === route.status;
+            });
+            return renderTaskList(taskToRender);
+          }}
+          onIndexChange={(index) => {
+            setSelectedIndex(index);
+          }}
+          renderTabBar={(props) => (
+            <TabBar
+              scrollEnabled={true}
+              style={{
+                shadowOffset: { height: 0, width: 0 },
+                shadowColor: "transparent",
+                shadowOpacity: 0,
+                elevation: 0,
+                backgroundColor: "transparent",
+                justifyContent: "space-between",
+              }}
+              pressColor="white"
+              activeColor={"white"}
+              inactiveColor={"#032E42"}
+              tabStyle={{
+                width: testdata.length > 0 ? "auto" : undefined,
+                paddingHorizontal: 4,
+                // margin: 4,
+              }}
+              renderLabel={({ route, focused }) => {
+                let taskToRender = tasks.filter((task) => {
+                  return task.status === route.status;
+                });
+                return (
+                  <View
+                    style={{
+                      backgroundColor: focused
+                        ? "#0A8FD8"
+                        : "rgba(236, 236, 236, 1)",
+                      borderRadius: 30,
+                      height: 36 * HEIGHT_SCALE_RATIO,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingHorizontal: 16 * WIDTH_SCALE_RATIO,
+                      flexDirection: "row",
+
+                      width: WIDTH / 3,
+                    }}
+                  >
+                    <Text
+                      style={[
+                        {
+                          fontSize: FS(14),
+                          marginTop: 1,
+                          color: focused ? "white" : "#032E42",
+                          alignSelf: "center",
+                          textAlign: "center",
+                        },
+                      ]}
+                    >
+                      {`${route.status}(${taskToRender.length})`}
+                    </Text>
+                  </View>
+                );
+              }}
+              indicatorStyle={{
+                backgroundColor: "transparent",
+              }}
+              // scrollEnabled={true}
+              {...props}
+            />
+          )}
+        />
+        {/* Render the TaskList component */}
+        <TaskModal
+          modalVisible={modalVisible}
+          task={task}
+          setTask={setTask}
+          handleAddTask={handleAddTask}
+          handleCancel={() => {
+            setEditingTask(null);
+            setTask(taskTypes[1]);
+            setModalVisible(false);
+            setValidationError(false);
+          }}
+          validationError={validationError}
+        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            handleDeleteAllDoneTask();
+          }}
+        >
+          <Text style={styles.addButtonText}>{"Delete All Done"}</Text>
+        </TouchableOpacity>
+
+        {/* Button to add or edit tasks */}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            setEditingTask(null);
+            setTask(taskTypes[0]);
+            setModalVisible(true);
+            setValidationError(false);
+          }}
+        >
+          <Text style={styles.addButtonText}>
+            {editingTask ? "Edit Task" : "Add Task"}
+          </Text>
+        </TouchableOpacity>
+        {/* Render the TaskModal component */}
+      </View>
+    </>
   );
 };
 

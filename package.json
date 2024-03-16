@@ -14,8 +14,10 @@
     "react-native": "0.71.14",
     "react-native-elements": "^3.4.3",
     "react-native-modern-datepicker": "^1.0.0-beta.91",
+    "react-native-pager-view": "^6.2.3",
     "react-native-popup-menu": "^0.16.1",
     "react-native-scroll-indicator": "^0.1.0",
+    "react-native-tab-view": "^3.5.2",
     "react-native-vector-icons": "^10.0.3"
   },
   "devDependencies": {

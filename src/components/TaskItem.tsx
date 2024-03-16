@@ -16,6 +16,8 @@ import {
 } from "react-native-popup-menu";
 import ScrollViewIndicator from "react-native-scroll-indicator";
 import { Icon } from "react-native-elements";
+import { TabBar, TabView } from "react-native-tab-view";
+import { taskTypes } from "../constant/types";
 
 const TaskItem = ({
   task,
@@ -23,37 +25,12 @@ const TaskItem = ({
   handleToggleCompletion,
   handleDeleteTask,
 }) => {
-  const testdata = [
-    {
-      id: 0,
-      label: "Incomplete",
-      statusBg: "#f7a59c",
-      statusBd: "#F44336",
-      btnLabel: "Start",
-    },
-    {
-      id: 1,
-      label: "In-progress",
-      statusBg: "#F9EF5C",
-      statusBd: "#E7D200",
-      btnLabel: "Resolve",
-    },
-    {
-      id: 2,
-      label: "Completed",
-      statusBg: "#62F95C",
-      statusBd: "#0C4A09",
-      btnLabel: "Reopen",
-    },
-  ];
-  const [status, setStatus] = useState(testdata[0]);
   const renderCalendar = (item: any) => {
-    const { label } = item;
+    const { status } = item;
     return (
       <MenuOption
         onSelect={async () => {
-          setStatus(item);
-          handleToggleCompletion(task.id, item.label);
+          handleToggleCompletion(task.id, item.status);
         }}
       >
         <View
@@ -68,19 +45,18 @@ const TaskItem = ({
               fontSize: FS(16),
             }}
           >
-            {label}
+            {status}
           </Text>
         </View>
       </MenuOption>
     );
   };
-
   return (
     <View
       style={[
         styles.taskItem,
         {
-          borderColor: status.statusBg,
+          borderColor: task.statusBg,
           borderWidth: 1,
           flexDirection: "column",
         },
@@ -118,12 +94,12 @@ const TaskItem = ({
             <MenuTrigger
               style={{
                 borderWidth: 2,
-                backgroundColor: status.statusBg,
+                backgroundColor: task.statusBg,
                 borderRadius: 12 * WIDTH_SCALE_RATIO,
                 justifyContent: "center",
                 alignItems: "center",
                 overflow: "visible",
-                borderColor: status.statusBd,
+                borderColor: task.statusBd,
                 minHeight: 50 * HEIGHT_SCALE_RATIO,
               }}
             >
@@ -142,7 +118,7 @@ const TaskItem = ({
                     },
                   ]}
                 >
-                  {status.label}
+                  {task.status}
                 </Text>
                 <Icon
                   type="Feather"
@@ -162,7 +138,7 @@ const TaskItem = ({
                   borderWidth: 1,
                 }}
               >
-                {testdata.map((item) => {
+                {taskTypes.map((item) => {
                   return renderCalendar(item);
                 })}
               </ScrollView>
@@ -175,21 +151,18 @@ const TaskItem = ({
       >
         <TouchableOpacity
           onPress={() => {
-            setStatus((status) => {
-              let newIndex = testdata.findIndex(
-                (item) => item.id === status.id
-              );
-              if (newIndex === testdata.length - 1 || newIndex === -1)
-                newIndex = 0;
-              else newIndex = newIndex + 1;
-              handleToggleCompletion(task.id, testdata[newIndex].label);
-              console.log(newIndex, testdata.length);
-              return testdata[newIndex];
-            });
+            console.log(task.status);
+            let newIndex = taskTypes.findIndex(
+              (item) => item.status === task.status
+            );
+            if (newIndex === taskTypes.length || newIndex === -1) {
+              newIndex = 0;
+            } else newIndex = newIndex + 1;
+            handleToggleCompletion(task.id, taskTypes[newIndex].status);
           }}
           style={[styles.editButton, { marginTop: 10 * HEIGHT_SCALE_RATIO }]}
         >
-          <Text style={styles.buttonText}>{status.btnLabel}</Text>
+          <Text style={styles.buttonText}>{task.btnLabel}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleEditTask(task)}
