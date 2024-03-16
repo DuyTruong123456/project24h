@@ -8,6 +8,6 @@ My app has the below features :
 + Can use local storage of your phone to store tasks
 + User-friendly interface
 + Task editing, filtering and deleting are all included
-  
++ Preset state management redux-saga for futher development
 my demo link: 
 https://youtu.be/6QJZ42cANpQ
