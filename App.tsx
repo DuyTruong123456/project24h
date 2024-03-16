@@ -170,7 +170,10 @@ const App = () => {
           }
         : t
     );
-    setTasks(updatedTasks);
+    setTasks(() => {
+      handleSetTask(updatedTasks);
+      return updatedTasks;
+    });
   };
   const testdata = [
     {
@@ -201,7 +204,16 @@ const App = () => {
   };
   return (
     <>
-      <Text style={[styles.title, { backgroundColor: "#4FC8ED" }]}>
+      <Text
+        style={[
+          styles.title,
+          {
+            backgroundColor: "#4FC8ED",
+            borderBottomLeftRadius: 30 * WIDTH_SCALE_RATIO,
+            borderBottomRightRadius: 30 * WIDTH_SCALE_RATIO,
+          },
+        ]}
+      >
         Task Manager
       </Text>
       <View style={styles.container}>
