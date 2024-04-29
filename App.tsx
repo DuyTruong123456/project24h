@@ -16,9 +16,9 @@ import styles, {
 import TaskList from "./src/components/TaskList";
 import TaskModal from "./src/components/TaskModal";
 import { TabBar, TabView } from "react-native-tab-view";
-import { taskTypes } from "./src/constant/types";
+import { taskPriority, taskTypes } from "./src/constant/types";
 import storage from "./src/components/storage";
-
+import configureStore from "./src/store";
 // Define the main App component
 const App = () => {
   // Define state variables
@@ -192,7 +192,12 @@ const App = () => {
       key: "completed",
     },
   ];
-  const renderTaskList = (taskToRender: any) => {
+  const renderTaskList = (taskToRender: any[]) => {
+    const sorted = taskToRender.sort((a, b) => {
+      let index2 = taskPriority.indexOf(a.priority);
+      let index1 = taskPriority.indexOf(b.priority);
+      return index1 == -1 ? 1 : index2 == -1 ? -1 : index1 - index2;
+    });
     return (
       <TaskList
         tasks={taskToRender}

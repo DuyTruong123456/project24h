@@ -1,3 +1,4 @@
+export const taskPriority = ["low", "medium", "high"];
 export const taskTypes = [
   {
     statusBg: "#f7a59c",
@@ -9,6 +10,7 @@ export const taskTypes = [
     status: "Incomplete",
     deadline: "",
     createdAt: "",
+    priority: taskPriority[0],
   },
   {
     statusBg: "#F9EF5C",
@@ -20,6 +22,7 @@ export const taskTypes = [
     status: "In-progress",
     deadline: "",
     createdAt: "",
+    priority: taskPriority[0],
   },
   {
     statusBg: "#62F95C",
@@ -31,5 +34,6 @@ export const taskTypes = [
     status: "Completed",
     deadline: "",
     createdAt: "",
+    priority: taskPriority[0],
   },
 ];
