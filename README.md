@@ -13,4 +13,5 @@ My app has the below features :
 - Task editing, filtering and deleting are all included
 - Preset state management redux-saga for futher development
   my demo link:
-  https://youtu.be/6QJZ42cANpQ
+  function :https://www.youtube.com/shorts/hJZfReipb_o
+  UX, animation: https://www.youtube.com/watch?v=GEmXJzwDbs0
