@@ -1,4 +1,4 @@
-export const taskPriority = ["low", "medium", "high"];
+export const taskPriority = ["thấp", "trung bình", "cao"];
 export const taskTypes = [
   {
     statusBg: "#f7a59c",
